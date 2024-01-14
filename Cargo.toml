@@ -11,4 +11,4 @@ version = "0.1.1"
 description = "An XMPP client that makes you say damn!"
 authors = ["Crispy Strawberry"]
 edition = "2021"
-license = "APACHE-2.0 OR MIT"
+license = "Apache-2.0 OR MIT"
