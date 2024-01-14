@@ -9,4 +9,4 @@ authors.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-damn-core = { path = "../damn-core" }
+damn-core = { path = "../damn-core", version = "0.1.2"}
