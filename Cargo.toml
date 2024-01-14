@@ -1,0 +1,11 @@
+[workspace]
+members = [
+  "damn-core",
+  "damn-bin",
+]
+resolver = "2"
+
+
+[workspace.package]
+description = "An XMPP client that makes you say damn!"
+authors = ["Crispy Strawberry"]
