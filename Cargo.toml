@@ -15,3 +15,7 @@ description = "An XMPP client that makes you say damn!"
 authors = ["Crispy Strawberry"]
 edition = "2021"
 license = "Apache-2.0 OR MIT"
+
+
+[workspace.dependencies]
+tokio = { version = "1.35", features = ["rt-multi-thread", "macros"] }
