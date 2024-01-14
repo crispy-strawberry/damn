@@ -3,6 +3,9 @@ members = [
   "damn-core",
   "damn-bin",
 ]
+default-members = [
+  "damn-bin"
+]
 resolver = "2"
 
 
