@@ -1,7 +1,7 @@
 use std::{
-    ffi::FromBytesWithNulError,
     io::{self, Error},
     net::{IpAddr, SocketAddr},
+    time::Duration,
 };
 
 use hickory_resolver::{
@@ -11,6 +11,7 @@ use hickory_resolver::{
     TokioAsyncResolver,
 };
 use tokio::net::TcpStream;
+use tokio::time::timeout;
 
 pub struct SrvLookError;
 
@@ -29,9 +30,7 @@ pub async fn resolve_connection(domain: &str) -> io::Result<TcpStream> {
             }
             a.priority().cmp(&b.priority())
         });
-        // for service in records {
-        //     println!("{service}");
-        // }
+
         'services: for service in records {
             let ip_list = resolver.lookup_ip(service.target().clone()).await;
 
@@ -40,23 +39,33 @@ pub async fn resolve_connection(domain: &str) -> io::Result<TcpStream> {
             }
 
             'ips: for ip in ip_list.unwrap().iter() {
-                // let addr = SocketAddr::new(ip, service.port());
-                // let connection = TcpStream::connect(addr).await;
-                // if connection.is_err() {
-                //     continue 'ips;
-                // }
+                let addr = SocketAddr::new(ip, service.port());
+                let conn = TcpStream::connect(addr).await;
+                if let Ok(connection) = conn {
+                    return Ok(connection);
+                }
                 println!("{service} {domain} {ip}");
-                // return connection;
+            }
+        }
+
+        return Err(Error::new(io::ErrorKind::NotFound, "Could not connect"));
+    } else {
+        let ip_list = resolver.lookup_ip(domain).await?;
+
+        for ip in ip_list.iter() {
+            println!("{ip}");
+            let addr = SocketAddr::new(ip, 5222);
+            let conn = timeout(Duration::from_secs(4), TcpStream::connect(addr)).await;
+
+            if let Ok(Ok(connection)) = conn {
+                return Ok(connection);
             }
         }
     }
-    Err(Error::new(io::ErrorKind::NotFound, "Domain not found"))
-}
-
-pub async fn connect_ip(ip: IpAddr) -> TcpStream {
-    let stream = TcpStream::connect(SocketAddr::new(ip, 5222)).await.unwrap();
-
-    stream
+    Err(Error::new(
+        io::ErrorKind::NotFound,
+        "XMPP server not found!",
+    ))
 }
 
 pub fn add(left: usize, right: usize) -> usize {
