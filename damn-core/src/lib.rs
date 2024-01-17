@@ -1,12 +1,11 @@
 use std::{
     io::{self, Error},
-    net::{IpAddr, SocketAddr},
+    net::SocketAddr,
     time::Duration,
 };
 
 use hickory_resolver::{
     config::{ResolverConfig, ResolverOpts},
-    error::ResolveError,
     proto::rr::rdata::SRV,
     TokioAsyncResolver,
 };
@@ -38,7 +37,7 @@ pub async fn resolve_connection(domain: &str) -> io::Result<TcpStream> {
                 continue 'services;
             }
 
-            'ips: for ip in ip_list.unwrap().iter() {
+            for ip in ip_list.unwrap().iter() {
                 let addr = SocketAddr::new(ip, service.port());
                 let conn = TcpStream::connect(addr).await;
                 if let Ok(connection) = conn {
@@ -64,7 +63,7 @@ pub async fn resolve_connection(domain: &str) -> io::Result<TcpStream> {
     }
     Err(Error::new(
         io::ErrorKind::NotFound,
-        "XMPP server not found!",
+        "Failed to connect to server! Please check if the server exists and is accepting connections",
     ))
 }
 

@@ -1,6 +1,4 @@
 use damn_core::resolve_connection;
-use std::io::{Read, Write};
-use std::net::TcpStream;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[tokio::main]
