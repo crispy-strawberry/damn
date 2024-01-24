@@ -6,7 +6,6 @@ use std::{
 
 use hickory_resolver::{
     config::{ResolverConfig, ResolverOpts},
-    proto::rr::rdata::SRV,
     TokioAsyncResolver,
 };
 use tokio::net::TcpStream;
@@ -15,14 +14,15 @@ use tokio::time::timeout;
 pub struct SrvLookError;
 
 pub async fn resolve_connection(domain: &str) -> io::Result<TcpStream> {
-    let resolver = TokioAsyncResolver::tokio(ResolverConfig::google(), ResolverOpts::default());
+    let resolver = TokioAsyncResolver::tokio(ResolverConfig::cloudflare(), ResolverOpts::default());
 
     let query = format!("_xmpp-client._tcp.{domain}.");
     let srv_res = resolver.srv_lookup(query).await;
     if let Ok(srv_records) = srv_res {
-        let mut records: Vec<SRV> = srv_records.into_iter().collect();
+        let mut records = srv_records.into_iter().collect::<Vec<_>>();
 
-        // Sorting it according to priority as specified in RFC
+        // Sorting it according to priority
+        // I am not doing the random probability bullshit.
         records.sort_unstable_by(|a, b| {
             if a.priority() == b.priority() {
                 return a.weight().cmp(&b.weight()).reverse();
@@ -30,11 +30,11 @@ pub async fn resolve_connection(domain: &str) -> io::Result<TcpStream> {
             a.priority().cmp(&b.priority())
         });
 
-        'services: for service in records {
+        for service in records {
             let ip_list = resolver.lookup_ip(service.target().clone()).await;
 
             if ip_list.is_err() {
-                continue 'services;
+                continue;
             }
 
             for ip in ip_list.unwrap().iter() {

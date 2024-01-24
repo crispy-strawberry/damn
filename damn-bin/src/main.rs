@@ -3,7 +3,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let mut connection = resolve_connection("jabber.org").await?;
+    let mut connection = resolve_connection("microsoft.com").await?;
     // let mut connection = TcpStream::connect("88.99.233.240:5222").await.unwrap();
     connection.writable().await?;
 
